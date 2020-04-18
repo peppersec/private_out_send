@@ -1,10 +1,11 @@
 require("dotenv").config()
 const Web3 = require("web3")
-const { numberToHex, toHex, toWei, fromWei } = require("web3-utils");
+const { toWei, fromWei } = require("web3-utils");
 const fs = require("fs")
 const SXP_ABI = require("./SXP.abi.json")
 
 const { GAS_PRICE, RPC_URL, TARGET_ADDRESS } = process.env
+let success, error, zero;
 const web3 = new Web3(RPC_URL, null, { transactionConfirmationBlocks: 1 }) // todo: more confirmation block
 const sxpToken = new web3.eth.Contract(SXP_ABI, '0xFab46E002BbF0b4509813474841E0716E6730136')
 
@@ -19,6 +20,7 @@ async function send(privateKey, index) {
     account = web3.eth.accounts.privateKeyToAccount('0x' + privateKey)
     web3.eth.accounts.wallet.add('0x' + privateKey)
   } catch {
+    error++
     console.log(`Account ${privateKey} has invalid format`)
   }
   try {
@@ -31,11 +33,14 @@ async function send(privateKey, index) {
         gas,
         gasPrice: toWei(GAS_PRICE, 'gwei')
       })
+      success++
       console.log(`${index + 1}: Withdrawn ${fromWei(balance)} SXP from ${account.address}, tx hash:\nhttps://kovan.etherscan.io/tx/${receipt.transactionHash}`)
     } else {
+      zero++
       console.log(`${index + 1}: Account ${account.address} has zero balance, skipping`)
     }
   } catch (e) {
+    error++
     console.log(`${index + 1}: Error withdrawing from account ${account.address}: ${e.message}`)
   }
 }
@@ -47,7 +52,7 @@ async function sendAll(keys) {
     promises.push(send(keys[index], index))
   }
   await Promise.all(promises)
-  console.log("\n\nCompleted")
+  console.log(`\n\nCompleted. Success: ${success}, Error: ${error}, Zero balance: ${zero}`)
 }
 
 async function main() {
