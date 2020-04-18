@@ -6,7 +6,7 @@ const SXP_ABI = require("./SXP.abi.json")
 
 const { GAS_PRICE, RPC_URL, TARGET_ADDRESS } = process.env
 const web3 = new Web3(RPC_URL, null, { transactionConfirmationBlocks: 1 }) // todo: more confirmation block
-const sxpToken = new web3.eth.Contract(SXP_ABI, '0xFab46E002BbF0b4509813474841E0716E6730136')
+const sxpToken = new web3.eth.Contract(SXP_ABI, '0x8ce9137d39326ad0cd6491fb5cc0cba0e089b6a9')
 
 let success = 0
 let error = 0
