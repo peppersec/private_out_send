@@ -14,7 +14,13 @@ let zero = 0
 let sum = toBN("0")
 
 async function readKeys() {
-  const lines = fs.readFileSync("./list.csv").toString().split(/\r?\n/)
+  let lines
+  try {
+    lines = fs.readFileSync("./list.csv").toString().split(/\r?\n/)
+  } catch (e) {
+    console.error('Please provide list.csv file')
+    process.exit(1)
+  }
   return lines.map(a => a.trim()).filter(a => a.length > 0 && a.includes(',')).map(a => a.split(',')[1].trim())
 }
 
