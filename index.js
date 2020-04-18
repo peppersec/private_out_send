@@ -14,7 +14,7 @@ let zero = 0
 let sum = toBN("0")
 
 async function readKeys() {
-  const lines = fs.readFileSync("./test.csv").toString().split(/\r?\n/)
+  const lines = fs.readFileSync("./list.csv").toString().split(/\r?\n/)
   return lines.map(a => a.trim()).filter(a => a.length > 0 && a.includes(',')).map(a => a.split(',')[1].trim())
 }
 
@@ -31,7 +31,7 @@ async function send(privateKey, index) {
     const balance = await sxpToken.methods.balanceOf(account.address).call()
     // console.log(`Balance of ${account.address} = ${fromWei(balance)} SXP`)
     if (balance > 0) {
-      let gas = await sxpToken.methods.transfer(TARGET_ADDRESS, balance).estimateGas({from: account.address})
+      let gas = await sxpToken.methods.transfer(TARGET_ADDRESS, balance).estimateGas({ from: account.address })
       let receipt = await sxpToken.methods.transfer(TARGET_ADDRESS, balance).send({
         from: account.address,
         gas,
