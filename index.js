@@ -1,13 +1,17 @@
 require("dotenv").config()
 const Web3 = require("web3")
-const { toWei, fromWei } = require("web3-utils");
+const { toBN, toWei, fromWei } = require("web3-utils");
 const fs = require("fs")
 const SXP_ABI = require("./SXP.abi.json")
 
 const { GAS_PRICE, RPC_URL, TARGET_ADDRESS } = process.env
-let success, error, zero;
 const web3 = new Web3(RPC_URL, null, { transactionConfirmationBlocks: 1 }) // todo: more confirmation block
 const sxpToken = new web3.eth.Contract(SXP_ABI, '0xFab46E002BbF0b4509813474841E0716E6730136')
+
+let success = 0
+let error = 0
+let zero = 0
+let sum = toBN("0")
 
 async function readKeys() {
   const lines = fs.readFileSync("./test.csv").toString().split(/\r?\n/)
@@ -34,6 +38,7 @@ async function send(privateKey, index) {
         gasPrice: toWei(GAS_PRICE, 'gwei')
       })
       success++
+      sum = sum.add(toBN(balance))
       console.log(`${index + 1}: Withdrawn ${fromWei(balance)} SXP from ${account.address}, tx hash:\nhttps://kovan.etherscan.io/tx/${receipt.transactionHash}`)
     } else {
       zero++
@@ -47,12 +52,16 @@ async function send(privateKey, index) {
 
 async function sendAll(keys) {
   let promises = []
-  for (let index in keys) {
+  for (let i = 0; i < keys.length; i++) {
+    promises.push(send(keys[i], i))
     await delay(100)
-    promises.push(send(keys[index], index))
   }
   await Promise.all(promises)
-  console.log(`\n\nCompleted. Success: ${success}, Error: ${error}, Zero balance: ${zero}`)
+  console.log(`\n\nCompleted`)
+  console.log(`Success: ${success}`)
+  console.log(`Error: ${error}`)
+  console.log(`Zero balance: ${zero}`)
+  console.log(`Total amount: ${fromWei(sum.toString())}`)
 }
 
 async function main() {
