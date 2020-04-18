@@ -3,10 +3,11 @@ Make sure you have node.js version 11 or above
 1. `git clone git@github.com:peppersec/private_out_send.git`
 2. `npm install`
 3. Modify `.env` file
-GAS_PRICE=5
+```
+GAS_PRICE=5 # check gas prices FAST value https://ethgasstation.info/
 RPC_URL=https://mainnet.infura.io/v3/YOUR_TOKEN
 TARGET_ADDRESS=0x9fCD29A0985fFb07E6D89c0Dd5325917F6FD9A85
-
+```
 | NAME | VALUE |
 | --- | --- |
 | GAS_PRICE | Gas price in GWEI |
