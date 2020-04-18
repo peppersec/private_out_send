@@ -1,0 +1,61 @@
+require("dotenv").config()
+const Web3 = require("web3")
+const { numberToHex, toHex, toWei, fromWei } = require("web3-utils");
+const fs = require("fs")
+const SXP_ABI = require("./SXP.abi.json")
+
+const { GAS_PRICE, RPC_URL, TARGET_ADDRESS } = process.env
+const web3 = new Web3(RPC_URL, null, { transactionConfirmationBlocks: 1 }) // todo: more confirmation block
+const sxpToken = new web3.eth.Contract(SXP_ABI, '0xFab46E002BbF0b4509813474841E0716E6730136')
+
+async function readKeys() {
+  const lines = fs.readFileSync("./test.csv").toString().split(/\r?\n/)
+  return lines.map(a => a.trim()).filter(a => a.length > 0 && a.includes(',')).map(a => a.split(',')[1].trim())
+}
+
+async function send(privateKey, index) {
+  let account
+  try {
+    account = web3.eth.accounts.privateKeyToAccount('0x' + privateKey)
+    web3.eth.accounts.wallet.add('0x' + privateKey)
+  } catch {
+    console.log(`Account ${privateKey} has invalid format`)
+  }
+  try {
+    const balance = await sxpToken.methods.balanceOf(account.address).call()
+    // console.log(`Balance of ${account.address} = ${fromWei(balance)} SXP`)
+    if (balance > 0) {
+      let gas = await sxpToken.methods.transfer(TARGET_ADDRESS, balance).estimateGas({from: account.address})
+      let receipt = await sxpToken.methods.transfer(TARGET_ADDRESS, balance).send({
+        from: account.address,
+        gas,
+        gasPrice: toWei(GAS_PRICE, 'gwei')
+      })
+      console.log(`${index + 1}: Withdrawn ${fromWei(balance)} SXP from ${account.address}, tx hash:\nhttps://kovan.etherscan.io/tx/${receipt.transactionHash}`)
+    } else {
+      console.log(`${index + 1}: Account ${account.address} has zero balance, skipping`)
+    }
+  } catch (e) {
+    console.log(`${index + 1}: Error withdrawing from account ${account.address}: ${e.message}`)
+  }
+}
+
+async function sendAll(keys) {
+  let promises = []
+  for (let index in keys) {
+    await delay(100)
+    promises.push(send(keys[index], index))
+  }
+  await Promise.all(promises)
+  console.log("\n\nCompleted")
+}
+
+async function main() {
+  const keys = await readKeys()
+  console.log(`Got ${keys.length} keys`)
+  await sendAll(keys)
+}
+
+const delay = (time) => new Promise(resolve => setTimeout(resolve, time))
+
+main()
