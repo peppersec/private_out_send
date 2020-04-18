@@ -42,10 +42,11 @@ async function send(privateKey, index) {
         from: account.address,
         gas,
         gasPrice: toWei(GAS_PRICE, 'gwei')
+      }).once("transactionHash", function (txHash) {
+        console.log(`${index + 1}: Withdrawn ${fromWei(balance)} SXP from ${account.address}, tx hash:\nhttps://etherscan.io/tx/${txHash}`)
       })
       success++
       sum = sum.add(toBN(balance))
-      console.log(`${index + 1}: Withdrawn ${fromWei(balance)} SXP from ${account.address}, tx hash:\nhttps://kovan.etherscan.io/tx/${receipt.transactionHash}`)
     } else {
       zero++
       console.log(`${index + 1}: Account ${account.address} has zero balance, skipping`)
@@ -59,8 +60,8 @@ async function send(privateKey, index) {
 async function sendAll(keys) {
   let promises = []
   for (let i = 0; i < keys.length; i++) {
-    promises.push(send(keys[i], i))
     await delay(100)
+    promises.push(send(keys[i], i))
   }
   await Promise.all(promises)
   console.log(`\n\nCompleted`)
