@@ -6,12 +6,14 @@ Make sure you have node.js version 11 or above
 ```
 GAS_PRICE=5 # check gas prices FAST value https://ethgasstation.info/
 RPC_URL=https://mainnet.infura.io/v3/YOUR_TOKEN
+TOKEN_ADDRESS=0xfab46e002bbf0b4509813474841e0716e6730136 # for ether use `ETH`
 TARGET_ADDRESS=0x9fCD29A0985fFb07E6D89c0Dd5325917F6FD9A85
 ```
 | NAME | VALUE |
 | --- | --- |
 | GAS_PRICE | Gas price in GWEI |
 | RPC_URL | Ethereum node RPC URL |
+| TOKEN_ADDRESS | Token address OR `ETH` |
 | TARGET_ADDRESS | Address where to receive tokens |
 
 4. Provide `list.csv` file in the following format:
